@@ -42,3 +42,4 @@ public class GrafanaConfig {
         this.webhooks = webhooks;
     }
 }
+

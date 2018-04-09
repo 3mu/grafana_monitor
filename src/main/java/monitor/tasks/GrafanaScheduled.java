@@ -2,6 +2,7 @@ package monitor.tasks;
 
 import com.alibaba.fastjson.JSON;
 import monitor.config.GrafanaConfig;
+import monitor.config.QiNiuConfig;
 import monitor.tasks.model.AlterModel;
 import monitor.tasks.model.EvalMatches;
 import monitor.utils.*;
@@ -29,6 +30,9 @@ public class GrafanaScheduled {
 
     @Autowired
     private GrafanaConfig config;
+
+    @Autowired
+    private QiNiuConfig qiNiuConfig;
 
     private static final Logger log = LoggerFactory.getLogger(GrafanaScheduled.class);
 
@@ -137,7 +141,7 @@ public class GrafanaScheduled {
         try {
             Response response = client.newCall(request).execute();
             InputStream input = response.body().byteStream();
-            String filename = QiNiuUtils.SavePic(input);
+            String filename = QiNiuUtils.SavePic(input, qiNiuConfig);
 
             return "http://p5bg32tij.bkt.clouddn.com/" + filename;
 

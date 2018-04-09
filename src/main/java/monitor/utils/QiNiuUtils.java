@@ -8,6 +8,7 @@ import com.qiniu.storage.Configuration;
 import com.qiniu.storage.UploadManager;
 import com.qiniu.storage.model.DefaultPutRet;
 import com.qiniu.util.Auth;
+import monitor.config.QiNiuConfig;
 
 import java.io.InputStream;
 
@@ -17,13 +18,13 @@ import java.io.InputStream;
  */
 public class QiNiuUtils {
 
-    public static String SavePic(InputStream inputStream) {
+    public static String SavePic(InputStream inputStream, QiNiuConfig config) {
 
         Configuration cfg = new Configuration(Zone.zone0());
         UploadManager uploadManager = new UploadManager(cfg);
-        String accessKey = "nXeQx2f_QJTqEEGfq6TV1MsNUkIh1M5HDQ6veH82";
-        String secretKey = "FWnbKZsAmdzM8GoD7roOVF41r8urAB2sgpQFtHE0";
-        String bucket = "monitor";
+        String accessKey = config.getAccessKey();
+        String secretKey = config.getSecretKey();
+        String bucket = config.getBucket();
         Auth auth = Auth.create(accessKey, secretKey);
         String upToken = auth.uploadToken(bucket);
         try {
