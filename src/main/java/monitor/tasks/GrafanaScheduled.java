@@ -53,7 +53,7 @@ public class GrafanaScheduled {
     }
 
 
-    @Scheduled(cron = "0/2 * 8-23 * * ?")
+    @Scheduled(cron = "0 0/2 8-23 * * ?")
     public void monitor() {
         log.info("start request grafana");
         OkHttpClient httpClient = new OkHttpClient();
