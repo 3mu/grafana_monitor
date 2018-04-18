@@ -154,37 +154,58 @@ public class GrafanaScheduled {
 
 
     private void SendMessageToDingDing(AlterModel model) {
-        config.getWebhooks().forEach(web_hook -> {
-            DDMessage meesgae = new DDMessage();
-            meesgae.setMsgtype("actionCard");
-            ActionCard actionCard = new ActionCard();
-            actionCard.setTitle(model.getName());
-            StringBuilder builder = new StringBuilder();
-            String imageUrl = DownloadPicture(model);
-            builder.append("![image](" + imageUrl + ")\n");
-            builder.append("## " + model.getName() + "_状态:" + model.getState() + "\n");
-            builder.append("时间: **" + model.getNewStateDate() + "**\n");
+        DDMessage message = new DDMessage();
+        message.setMsgtype("actionCard");
+        ActionCard actionCard = new ActionCard();
+        actionCard.setTitle(model.getName());
+        StringBuilder builder = new StringBuilder();
+        String imageUrl = DownloadPicture(model);
+        builder.append("![image](" + imageUrl + ")\n");
+        builder.append("## " + model.getName() + "_状态:" + model.getState() + "\n");
+        builder.append("时间: **" + model.getNewStateDate() + "**\n");
+
+
+        if (model.getState() == "alerting") {
+
+            boolean ignore = true;
             //获取真实的报错报文
             AlterModel detail = getAlterDetails(model.getId());
             if (detail.getEvalData() != null) {
                 if (detail.getEvalData().getEvalMatches() != null) {
                     for (EvalMatches match : detail.getEvalData().getEvalMatches()) {
+                        String ignore_key = match.getMetric();
+                        List<String> keys = config.getIgnore();
+                        if (null == keys || keys.size() == 0) {
+                            ignore = false;
+                        }
+                        for (String key : keys) {
+                            boolean contains = ignore_key.contains(key);
+                            if (!contains) {
+                                ignore = false;
+                            }
+                        }
                         builder.append("- " + match.getMetric() + ":" + match.getValue() + "\n");
                     }
                 }
-            }
-            actionCard.setText(builder.toString());
-            actionCard.setBtnOrientation("0");
-            actionCard.setHideAvatar("0");
-            Button btn = new Button();
-            btn.setTitle("详情");
-            btn.setActionURL(imageUrl);
-            List<Button> btns = new ArrayList<>();
-            btns.add(btn);
-            actionCard.setBtns(btns);
-            meesgae.setActionCard(actionCard);
-            DingDingUtils.SendMessage(web_hook, meesgae);
 
+            }
+            if (ignore) {
+                return;
+            }
+        }
+
+        actionCard.setText(builder.toString());
+        actionCard.setBtnOrientation("0");
+        actionCard.setHideAvatar("0");
+        Button btn = new Button();
+        btn.setTitle("详情");
+        btn.setActionURL(imageUrl);
+        List<Button> btns = new ArrayList<>();
+        btns.add(btn);
+        actionCard.setBtns(btns);
+        message.setActionCard(actionCard);
+        config.getWebhooks().forEach(web_hook -> {
+            DingDingUtils.SendMessage(web_hook, message);
         });
     }
 }

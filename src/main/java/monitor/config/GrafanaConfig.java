@@ -41,5 +41,16 @@ public class GrafanaConfig {
     public void setWebhooks(List<String> webhooks) {
         this.webhooks = webhooks;
     }
+
+    private List<String> ignore;
+
+
+    public List<String> getIgnore() {
+        return ignore;
+    }
+
+    public void setIgnore(List<String> ignore) {
+        this.ignore = ignore;
+    }
 }
 
