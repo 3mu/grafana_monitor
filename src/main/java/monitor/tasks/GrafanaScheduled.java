@@ -154,22 +154,11 @@ public class GrafanaScheduled {
 
 
     private void SendMessageToDingDing(AlterModel model) {
-        DDMessage message = new DDMessage();
-        message.setMsgtype("actionCard");
-        ActionCard actionCard = new ActionCard();
-        actionCard.setTitle(model.getName());
-        StringBuilder builder = new StringBuilder();
-        String imageUrl = DownloadPicture(model);
-        builder.append("![image](" + imageUrl + ")\n");
-        builder.append("## " + model.getName() + "_状态:" + model.getState() + "\n");
-        builder.append("时间: **" + model.getNewStateDate() + "**\n");
 
-
-        if (model.getState() == "alerting") {
-
+        //获取真实的报错报文
+        AlterModel detail = getAlterDetails(model.getId());
+        if (model.getState().equals("alerting")) {
             boolean ignore = true;
-            //获取真实的报错报文
-            AlterModel detail = getAlterDetails(model.getId());
             if (detail.getEvalData() != null) {
                 if (detail.getEvalData().getEvalMatches() != null) {
                     for (EvalMatches match : detail.getEvalData().getEvalMatches()) {
@@ -177,14 +166,16 @@ public class GrafanaScheduled {
                         List<String> keys = config.getIgnore();
                         if (null == keys || keys.size() == 0) {
                             ignore = false;
+                            break;
                         }
                         for (String key : keys) {
                             boolean contains = ignore_key.contains(key);
                             if (!contains) {
                                 ignore = false;
+                                break;
                             }
                         }
-                        builder.append("- " + match.getMetric() + ":" + match.getValue() + "\n");
+
                     }
                 }
 
@@ -194,6 +185,23 @@ public class GrafanaScheduled {
             }
         }
 
+        DDMessage message = new DDMessage();
+        message.setMsgtype("actionCard");
+        ActionCard actionCard = new ActionCard();
+        actionCard.setTitle(model.getName());
+        StringBuilder builder = new StringBuilder();
+        String imageUrl = DownloadPicture(model);
+        builder.append("![image](" + imageUrl + ")\n");
+        builder.append("## " + model.getName() + "_状态:" + model.getState() + "\n");
+        builder.append("时间: **" + model.getNewStateDate() + "**\n");
+        
+        if (detail.getEvalData() != null) {
+            if (detail.getEvalData().getEvalMatches() != null) {
+                for (EvalMatches match : detail.getEvalData().getEvalMatches()) {
+                    builder.append("- " + match.getMetric() + ":" + match.getValue() + "\n");
+                }
+            }
+        }
         actionCard.setText(builder.toString());
         actionCard.setBtnOrientation("0");
         actionCard.setHideAvatar("0");
